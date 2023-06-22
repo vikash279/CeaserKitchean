@@ -47,6 +47,9 @@ Route::get('/signup',[MainController::class, 'signup'])->name('signup');
 Route::get('/store',[MainController::class, 'store'])->name('store');
 Route::get('/wheretobuy',[MainController::class, 'whereToBuy'])->name('wheretobuy');
 
+Route::post('/dosignup',[MainController::class, 'doSignUp']);
+Route::post('/dologin',[MainController::class, 'doLogin']);
+
 Route::get('logout', function ()
 {
     auth()->logout();
@@ -54,4 +57,3 @@ Route::get('logout', function ()
 
     return Redirect::to('/index');
 })->name('logout');
-

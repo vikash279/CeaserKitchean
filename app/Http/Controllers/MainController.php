@@ -7,6 +7,7 @@ use Validator;
 use DataTables;
 use Session;
 use DB;
+use Illuminate\Support\Facades\Hash;
 use App\Models\ProductCategory;
 use App\Models\Product;
 use App\Models\BlogCategory;
@@ -17,6 +18,7 @@ use App\Models\AboutusDetail;
 use App\Models\AbouthomeDetail;
 use App\Models\BannerDetail;
 use App\Models\Banner;
+use App\Models\User;
 
 class MainController extends Controller
 {
@@ -130,6 +132,7 @@ class MainController extends Controller
     }
 
     public function store(Request $request){
+       // print_r(session()->get('user_id'));die;
         // $productdetails = Product::where('status','1')->orderBy('id','desc')->get()->toArray();
          $productcategory = ProductCategory::where('status','1')->get()->toArray();
          if($productcategory){
@@ -150,5 +153,57 @@ class MainController extends Controller
     public function whereToBuy(Request $request){
         $banner = Banner::where('status','1')->orderBy('id','desc')->limit(1)->get()->toArray();
         return view('wheretobuy', compact('banner'));
+    }
+
+    public function doSignUp(Request $request){
+        $validation_array = [
+             'email' => 'required|email|unique:users',
+             'phone' => 'required',
+             'password' => 'required',
+             'name' => 'required',
+             'address' => 'required',
+
+        ];
+
+        $validator = Validator::make($request->all(), $validation_array);
+        $validation_message   = get_message_from_validator_object($validator->errors());
+
+        if($validator->fails()){
+            return back()->with('error', $validation_message);       
+        }else{
+            $input = $request->all();
+            $input['password'] = Hash::make($request->password);
+            $res = User::create($input);
+            return redirect()->route('login')->withSuccess('User registered successfully!'); 
+        }    
+    }
+
+    public function doLogin(Request $request){
+        $validation_array = [
+            'email' => 'required',
+            'password' => 'required',
+       ];
+
+       $validator = Validator::make($request->all(), $validation_array);
+       $validation_message   = get_message_from_validator_object($validator->errors());
+
+       if($validator->fails()){
+           return back()->with('error', $validation_message);       
+       }else{
+           $userdetails = User::where('email', $request->email)->first();
+           if($userdetails){
+             if (Hash::check($request->password, $userdetails->password)){
+                $request->session()->put('name',$userdetails->name);
+                $request->session()->put('user_id',$userdetails->id);
+                $request->session()->put('email',$userdetails->email);
+        
+                return redirect()->route('store');
+             }else{
+                return back()->with('error','Wrong password!');
+             }
+           }else{
+               return back()->with('error','Email does not exist.!');
+           }
+       }   
     }
 }
