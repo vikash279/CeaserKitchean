@@ -19,6 +19,8 @@ use App\Models\AbouthomeDetail;
 use App\Models\BannerDetail;
 use App\Models\Banner;
 use App\Models\User;
+use App\Models\UserWishlist;
+use App\Models\UserCartDetail;
 
 class MainController extends Controller
 {
@@ -70,7 +72,7 @@ class MainController extends Controller
     }
 
     public function productdetails(Request $request,$id){
-         $productdetails = Product::where('id',$id)->first();
+        $productdetails = Product::where('id',$id)->first();
         $products = Product::where('status','1')->orderBy('id','desc')->limit(6)->get()->toArray();
         $banner = Banner::where('status','1')->orderBy('id','desc')->limit(1)->get()->toArray();
         // print_r($products);die;
@@ -205,5 +207,95 @@ class MainController extends Controller
                return back()->with('error','Email does not exist.!');
            }
        }   
+    }
+
+    public function addToWishlist(Request $request,$id){
+      if(session()->get('user_id')){
+        $data = [
+            'user_id' => session()->get('user_id'),
+            'product_id' => $id
+        ];
+
+        $wishlistdetails = UserWishlist::where($data)->first();
+        if($wishlistdetails){
+            echo "<script>";
+            echo "alert('Product already present in your wishlist.!');";
+            echo "setTimeout(function() {
+                window.location.href = '" . route('productdetails', ['id' => $id]) . "';
+            }, 100);";
+            echo "</script>";    
+    
+            return;
+
+        }else{
+            $details = UserWishlist::create($data);
+            echo "<script>";
+            echo "alert('Product successfully added to wishlist.!');";
+            echo "setTimeout(function() {
+                window.location.href = '" . route('productdetails', ['id' => $id]) . "';
+            }, 100);";
+            echo "</script>";    
+    
+            return;
+           // return redirect()->route('productdetails', ['id' => $id]); 
+        }  
+        
+      }else{
+        echo "<script>";
+        echo "alert('Please login to our store to add products to your wishlist.!');";
+        echo "setTimeout(function() {
+            window.location.href = '" . route('productdetails', ['id' => $id]) . "';
+        }, 100);";
+        echo "</script>";    
+
+        return; 
+      }  
+    }
+
+    public function addToCart(Request $request,$id){
+        if(session()->get('user_id')){
+            $where = [
+                'user_id' => session()->get('user_id'),
+                'product_id' => $id
+            ];
+    
+            $cartdetails = UserCartDetail::where($where)->first();
+            if($cartdetails){
+                echo "<script>";
+                echo "alert('Product already present in your cart.!');";
+                echo "setTimeout(function() {
+                    window.location.href = '" . route('productdetails', ['id' => $id]) . "';
+                }, 100);";
+                echo "</script>";    
+        
+                return;
+    
+            }else{
+                $data = [
+                    'user_id' => session()->get('user_id'),
+                    'product_id' => $id,
+                    'quantity' => '1'
+                ];
+                $details = UserCartDetail::create($data);
+                echo "<script>";
+                echo "alert('Product successfully added to your cart.!');";
+                echo "setTimeout(function() {
+                    window.location.href = '" . route('productdetails', ['id' => $id]) . "';
+                }, 100);";
+                echo "</script>";    
+        
+                return;
+            }  
+            
+          }else{
+            echo "<script>";
+            echo "alert('Please login to our store to add products to your cart.!');";
+            echo "setTimeout(function() {
+                window.location.href = '" . route('productdetails', ['id' => $id]) . "';
+            }, 100);";
+            echo "</script>";    
+    
+            return; 
+        }  
     }
 }

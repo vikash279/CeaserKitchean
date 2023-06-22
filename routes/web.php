@@ -49,6 +49,8 @@ Route::get('/wheretobuy',[MainController::class, 'whereToBuy'])->name('wheretobu
 
 Route::post('/dosignup',[MainController::class, 'doSignUp']);
 Route::post('/dologin',[MainController::class, 'doLogin']);
+Route::get('/addtowishlist/{id}',[MainController::class, 'addToWishlist'])->name('addtowishlist');
+Route::get('/addtocart/{id}',[MainController::class, 'addToCart'])->name('addtocart');
 
 Route::get('logout', function ()
 {
